@@ -28,6 +28,8 @@ jobs:
         with:
           channel: 'stable'
       - run: flutter pub get
+      - name: Remove Termux AAPT2 Override
+        run: sed -i '/android.aapt2FromMavenOverride/d' android/gradle.properties
       - name: Build Debug APKs
         run: flutter build apk --debug --split-per-abi
       - name: Upload arm64-v8a Debug APK
@@ -59,6 +61,8 @@ jobs:
           echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> android/key.properties
           echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> android/key.properties
           echo "storeFile=upload-keystore.jks" >> android/key.properties
+      - name: Remove Termux AAPT2 Override
+        run: sed -i '/android.aapt2FromMavenOverride/d' android/gradle.properties
       - name: Build Release APKs (Optimized)
         run: flutter build apk --release --split-per-abi --obfuscate --split-debug-info=build/app/outputs/symbols
       - name: Upload arm64-v8a Release APK
