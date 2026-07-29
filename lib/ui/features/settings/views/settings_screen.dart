@@ -150,7 +150,7 @@ class SettingsScreen extends ConsumerWidget {
                   const SnackBar(content: Text('Generating backup...')),
                 );
                 final path = await ref.read(backupServiceProvider).createBackup();
-                await Share.shareXFiles([XFile(path)], subject: 'PureNote Backup');
+                await SharePlus.instance.share(ShareParams(files: [XFile(path)], subject: 'PureNote Backup'));
               } catch (e) {
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(

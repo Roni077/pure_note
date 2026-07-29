@@ -104,7 +104,7 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen> {
     }
     
     if (mounted) {
-      await Share.shareXFiles([XFile(file.path)], subject: 'Exported Note: $title');
+      await SharePlus.instance.share(ShareParams(files: [XFile(file.path)], text: 'Check out this note: $title'));
     }
   }
 
@@ -334,12 +334,7 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen> {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: QuillEditor.basic(
-                    configurations: QuillEditorConfigurations(
-                      controller: _quillController,
-                      sharedConfigurations: const QuillSharedConfigurations(
-                        locale: Locale('en'),
-                      ),
-                    ),
+                    controller: _quillController,
                   ),
                 ),
               ),
@@ -372,13 +367,9 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen> {
                 ),
               Container(
                 color: Theme.of(context).colorScheme.surface,
-                child: QuillToolbar.simple(
-                  configurations: QuillSimpleToolbarConfigurations(
-                    controller: _quillController,
-                    sharedConfigurations: const QuillSharedConfigurations(
-                      locale: Locale('en'),
-                    ),
-                  ),
+                child: QuillSimpleToolbar(
+                  controller: _quillController,
+                  config: const QuillSimpleToolbarConfig(),
                 ),
               ),
             ],
