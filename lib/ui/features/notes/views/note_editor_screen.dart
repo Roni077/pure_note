@@ -116,7 +116,7 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen> {
     final currentNote = ref.read(noteEditorProvider(widget.noteId)).value;
     if (currentNote == null) return;
     
-    final result = await FilePicker.platform.pickFiles();
+    final result = await FilePicker.pickFiles();
     if (result != null && result.files.single.path != null) {
       final file = File(result.files.single.path!);
       

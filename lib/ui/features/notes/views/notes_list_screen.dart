@@ -16,7 +16,7 @@ class NotesListScreen extends ConsumerWidget {
   const NotesListScreen({super.key});
 
   Future<void> _importNote(BuildContext context, WidgetRef ref) async {
-    final result = await FilePicker.platform.pickFiles(
+    final result = await FilePicker.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['txt', 'json', 'md'],
     );

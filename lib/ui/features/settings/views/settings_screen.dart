@@ -165,7 +165,7 @@ class SettingsScreen extends ConsumerWidget {
             title: const Text('Restore Backup'),
             subtitle: const Text('Import data from a .purenote archive'),
             onTap: () async {
-              final result = await FilePicker.platform.pickFiles(
+              final result = await FilePicker.pickFiles(
                 type: FileType.any, // .purenote is not a standard type
               );
               if (result != null && result.files.single.path != null) {
