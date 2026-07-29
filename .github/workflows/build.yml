@@ -1,0 +1,78 @@
+name: Build and Sign APK
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+      - run: flutter pub get
+      - name: Run unit tests (skipping integration tests due to native-assets bug)
+        run: flutter test test/
+
+  build-debug:
+    name: Build Debug APK
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+      - run: flutter pub get
+      - name: Build Debug APKs
+        run: flutter build apk --debug --split-per-abi
+      - name: Upload arm64-v8a Debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: pure_note+debug+arm64-v8a.apk
+          path: build/app/outputs/flutter-apk/app-arm64-v8a-debug.apk
+      - name: Upload armeabi-v7a Debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: pure_note+debug+armeabi-v7a.apk
+          path: build/app/outputs/flutter-apk/app-armeabi-v7a-debug.apk
+
+  build-release:
+    name: Build Release APK
+    needs: build-debug
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+      - run: flutter pub get
+      - name: Decode Keystore
+        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/upload-keystore.jks
+      - name: Create key.properties
+        run: |
+          echo "storePassword=${{ secrets.STORE_PASSWORD }}" > android/key.properties
+          echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> android/key.properties
+          echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> android/key.properties
+          echo "storeFile=upload-keystore.jks" >> android/key.properties
+      - name: Build Release APKs (Optimized)
+        run: flutter build apk --release --split-per-abi --obfuscate --split-debug-info=build/app/outputs/symbols
+      - name: Upload arm64-v8a Release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: pure_note+release+arm64-v8a.apk
+          path: build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
+      - name: Upload armeabi-v7a Release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: pure_note+release+armeabi-v7a.apk
+          path: build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
+      - name: Upload Debug Symbols
+        uses: actions/upload-artifact@v4
+        with:
+          name: pure_note-debug-symbols
+          path: build/app/outputs/symbols
