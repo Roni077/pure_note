@@ -20,7 +20,7 @@ subprojects {
 }
 
 subprojects {
-    afterEvaluate {
+    project.plugins.withId("com.android.library") {
         project.extensions.findByType<com.android.build.api.dsl.LibraryExtension>()?.apply {
             compileSdk = 36
         }
