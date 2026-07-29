@@ -20,12 +20,17 @@ subprojects {
 }
 
 subprojects {
-    afterEvaluate {
-        project.plugins.withId("com.android.library") {
-            project.extensions.findByType<com.android.build.api.dsl.LibraryExtension>()?.apply {
+    val configureAction = Action<Project> {
+        plugins.withId("com.android.library") {
+            extensions.findByType<com.android.build.api.dsl.LibraryExtension>()?.apply {
                 compileSdk = 36
             }
         }
+    }
+    if (state.executed) {
+        configureAction.execute(this)
+    } else {
+        afterEvaluate(configureAction)
     }
 }
 
