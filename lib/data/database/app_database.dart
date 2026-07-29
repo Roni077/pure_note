@@ -42,12 +42,12 @@ class AppDatabase extends _$AppDatabase {
       ''');
       await customStatement('''
         CREATE TRIGGER notes_delete AFTER DELETE ON notes BEGIN
-          INSERT INTO note_search_entries(note_search_entries, id, title, content) VALUES('delete', old.id, old.title, old.content);
+          DELETE FROM note_search_entries WHERE id = old.id;
         END;
       ''');
       await customStatement('''
         CREATE TRIGGER notes_update AFTER UPDATE ON notes BEGIN
-          INSERT INTO note_search_entries(note_search_entries, id, title, content) VALUES('delete', old.id, old.title, old.content);
+          DELETE FROM note_search_entries WHERE id = old.id;
           INSERT INTO note_search_entries(id, title, content) VALUES (new.id, new.title, new.content);
         END;
       ''');
