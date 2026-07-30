@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:archive/archive_io.dart';
 import 'package:drift/drift.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
@@ -33,15 +32,8 @@ class BackupServiceImpl implements BackupService {
       }
     };
 
-    final jsonData = jsonEncode(backupData);
-
-    // 2. Create archive
-    final archive = Archive();
-    
-    // Add data.json
-    final jsonBytes = utf8.encode(jsonData);
-    archive.addFile(ArchiveFile('data.json', jsonBytes.length, jsonBytes));
-
+    // 2. Gather attachments and encode as base64
+    final Map<String, String> filesData = {};
     final appDocsDir = await getApplicationDocumentsDirectory();
     final attachmentsDir = Directory('${appDocsDir.path}/attachments');
     if (await attachmentsDir.exists()) {
@@ -49,49 +41,45 @@ class BackupServiceImpl implements BackupService {
         if (entity is File) {
           final relativePath = p.relative(entity.path, from: appDocsDir.path);
           final bytes = await entity.readAsBytes();
-          archive.addFile(ArchiveFile(relativePath.replaceAll('\\', '/'), bytes.length, bytes));
+          filesData[relativePath.replaceAll('\\', '/')] = base64Encode(bytes);
         }
       }
     }
+    backupData['files'] = filesData;
+
+    final jsonData = jsonEncode(backupData);
 
     // 3. Save to temp directory
     final tempDir = await getTemporaryDirectory();
-    final fileName = 'purenote_backup_${DateTime.now().millisecondsSinceEpoch}.purenote';
+    final fileName = 'purenote_backup_${DateTime.now().millisecondsSinceEpoch}.json';
     final filePath = p.join(tempDir.path, fileName);
     
-    final bytes = ZipEncoder().encode(archive);
-    if (bytes != null) {
-      final file = File(filePath);
-      await file.writeAsBytes(bytes);
-    }
+    final file = File(filePath);
+    await file.writeAsString(jsonData);
 
     return filePath;
   }
 
   @override
   Future<void> restoreBackup(String filePath) async {
-    final bytes = await File(filePath).readAsBytes();
-    final archive = ZipDecoder().decodeBytes(bytes);
+    final jsonData = await File(filePath).readAsString();
+    final decoded = jsonDecode(jsonData) as Map<String, dynamic>;
 
-    String? jsonData;
-    final appDocsDir = await getApplicationDocumentsDirectory();
-    
-    for (final file in archive) {
-      if (file.name == 'data.json') {
-        jsonData = utf8.decode(file.content as List<int>);
-      } else if (file.name.startsWith('attachments/')) {
-        final outFile = File(p.join(appDocsDir.path, file.name));
+    // Restore files
+    final filesData = decoded['files'] as Map<String, dynamic>?;
+    if (filesData != null) {
+      final appDocsDir = await getApplicationDocumentsDirectory();
+      for (final entry in filesData.entries) {
+        final outFile = File(p.join(appDocsDir.path, entry.key));
         await outFile.parent.create(recursive: true);
-        await outFile.writeAsBytes(file.content as List<int>);
+        await outFile.writeAsBytes(base64Decode(entry.value as String));
       }
     }
 
-    if (jsonData == null) {
-      throw Exception('Invalid backup file: missing data.json');
+    final tables = decoded['tables'] as Map<String, dynamic>?;
+    if (tables == null) {
+      throw Exception('Invalid backup file: missing tables data');
     }
-
-    final decoded = jsonDecode(jsonData);
-    final tables = decoded['tables'] as Map<String, dynamic>;
 
     await _db.transaction(() async {
       // Restore Folders

@@ -24,6 +24,8 @@ class SettingsViewModel extends Notifier<SettingsState> {
     final defaultSortOrder = _prefs.getString('defaultSortOrder') ?? 'updated_desc';
     final previewLength = _prefs.getInt('previewLength') ?? 5;
     final dynamicColor = _prefs.getBool('dynamicColor') ?? true;
+    final enableAppLock = _prefs.getBool('enableAppLock') ?? false;
+    final hideLockedNotesPreview = _prefs.getBool('hideLockedNotesPreview') ?? false;
 
     return SettingsState(
       themeMode: theme,
@@ -31,6 +33,8 @@ class SettingsViewModel extends Notifier<SettingsState> {
       defaultSortOrder: defaultSortOrder,
       previewLength: previewLength,
       dynamicColor: dynamicColor,
+      enableAppLock: enableAppLock,
+      hideLockedNotesPreview: hideLockedNotesPreview,
     );
   }
 
@@ -57,6 +61,16 @@ class SettingsViewModel extends Notifier<SettingsState> {
   void setDynamicColor(bool isDynamic) {
     _prefs.setBool('dynamicColor', isDynamic);
     state = state.copyWith(dynamicColor: isDynamic);
+  }
+
+  void setEnableAppLock(bool enable) {
+    _prefs.setBool('enableAppLock', enable);
+    state = state.copyWith(enableAppLock: enable);
+  }
+
+  void setHideLockedNotesPreview(bool hide) {
+    _prefs.setBool('hideLockedNotesPreview', hide);
+    state = state.copyWith(hideLockedNotesPreview: hide);
   }
 }
 

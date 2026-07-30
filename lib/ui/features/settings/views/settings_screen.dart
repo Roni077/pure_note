@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:file_picker/file_picker.dart';
-import 'package:share_plus/share_plus.dart';
-import '../../../../data/providers/repository_providers.dart';
-import '../viewmodels/settings_viewmodel.dart';
+import 'package:go_router/go_router.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -16,179 +13,33 @@ class SettingsScreen extends ConsumerWidget {
       ),
       body: ListView(
         children: [
-          const Padding(
-            padding: EdgeInsets.all(16.0),
-            child: Text('Appearance', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey)),
-          ),
-          Consumer(
-            builder: (context, ref, child) {
-              final settings = ref.watch(settingsProvider);
-              return Column(
-                children: [
-                  // ignore: deprecated_member_use
-                  RadioListTile<ThemeMode>(
-                    title: const Text('System Default'),
-                    value: ThemeMode.system,
-                    groupValue: settings.themeMode,
-                    onChanged: (val) => ref.read(settingsProvider.notifier).setThemeMode(val!),
-                  ),
-                  // ignore: deprecated_member_use
-                  RadioListTile<ThemeMode>(
-                    title: const Text('Light'),
-                    value: ThemeMode.light,
-                    groupValue: settings.themeMode,
-                    onChanged: (val) => ref.read(settingsProvider.notifier).setThemeMode(val!),
-                  ),
-                  // ignore: deprecated_member_use
-                  RadioListTile<ThemeMode>(
-                    title: const Text('Dark'),
-                    value: ThemeMode.dark,
-                    groupValue: settings.themeMode,
-                    onChanged: (val) => ref.read(settingsProvider.notifier).setThemeMode(val!),
-                  ),
-                ],
-              );
-            },
-          ),
-          Consumer(
-            builder: (context, ref, child) {
-              final settings = ref.watch(settingsProvider);
-              return SwitchListTile(
-                title: const Text('Dynamic Color'),
-                subtitle: const Text('Use system colors on supported devices'),
-                value: settings.dynamicColor,
-                onChanged: (val) {
-                  ref.read(settingsProvider.notifier).setDynamicColor(val);
-                },
-              );
-            },
-          ),
-          const Divider(),
-          const Padding(
-            padding: EdgeInsets.all(16.0),
-            child: Text('Notes', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey)),
-          ),
-          Consumer(
-            builder: (context, ref, child) {
-              final settings = ref.watch(settingsProvider);
-              return Column(
-                children: [
-                  ListTile(
-                    title: const Text('Default Sort Order'),
-                    trailing: DropdownButton<String>(
-                      value: settings.defaultSortOrder,
-                      onChanged: (val) {
-                        if (val != null) {
-                          ref.read(settingsProvider.notifier).setDefaultSortOrder(val);
-                        }
-                      },
-                      items: const [
-                        DropdownMenuItem(value: 'updated_desc', child: Text('Recently Updated')),
-                        DropdownMenuItem(value: 'created_desc', child: Text('Recently Created')),
-                        DropdownMenuItem(value: 'alpha_asc', child: Text('A-Z')),
-                      ],
-                    ),
-                  ),
-                  ListTile(
-                    title: const Text('Preview Lines Length'),
-                    trailing: DropdownButton<int>(
-                      value: settings.previewLength,
-                      onChanged: (val) {
-                        if (val != null) {
-                          ref.read(settingsProvider.notifier).setPreviewLength(val);
-                        }
-                      },
-                      items: const [
-                        DropdownMenuItem(value: 3, child: Text('3 lines')),
-                        DropdownMenuItem(value: 5, child: Text('5 lines')),
-                        DropdownMenuItem(value: 10, child: Text('10 lines')),
-                      ],
-                    ),
-                  ),
-                ],
-              );
-            },
-          ),
-          const Divider(),
-          const Padding(
-            padding: EdgeInsets.all(16.0),
-            child: Text('Data & Storage', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey)),
-          ),
-          Consumer(
-            builder: (context, ref, child) {
-              final settings = ref.watch(settingsProvider);
-              return ListTile(
-                title: const Text('Auto-empty Trash'),
-                subtitle: Text(settings.autoEmptyTrashDays == 0 ? 'Never' : 'After ${settings.autoEmptyTrashDays} days'),
-                trailing: DropdownButton<int>(
-                  value: settings.autoEmptyTrashDays,
-                  onChanged: (val) {
-                    if (val != null) {
-                      ref.read(settingsProvider.notifier).setAutoEmptyTrashDays(val);
-                    }
-                  },
-                  items: const [
-                    DropdownMenuItem(value: 0, child: Text('Never')),
-                    DropdownMenuItem(value: 7, child: Text('7 days')),
-                    DropdownMenuItem(value: 30, child: Text('30 days')),
-                  ],
-                ),
-              );
-            },
-          ),
-          const Padding(
-            padding: EdgeInsets.all(16.0),
-            child: Text('Backup & Restore', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey)),
+          ListTile(
+            leading: const Icon(Icons.palette_outlined),
+            title: const Text('Appearance'),
+            subtitle: const Text('Theme, colors, and styling'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.go('/settings/appearance'),
           ),
           ListTile(
-            leading: const Icon(Icons.backup),
-            title: const Text('Export Backup'),
-            subtitle: const Text('Create a .purenote archive of all your data'),
-            onTap: () async {
-              try {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Generating backup...')),
-                );
-                final path = await ref.read(backupServiceProvider).createBackup();
-                await SharePlus.instance.share(ShareParams(files: [XFile(path)], subject: 'PureNote Backup'));
-              } catch (e) {
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Backup failed: $e')),
-                  );
-                }
-              }
-            },
+            leading: const Icon(Icons.edit_note_outlined),
+            title: const Text('Notes'),
+            subtitle: const Text('Sort order and preview length'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.go('/settings/notes'),
           ),
           ListTile(
-            leading: const Icon(Icons.restore),
-            title: const Text('Restore Backup'),
-            subtitle: const Text('Import data from a .purenote archive'),
-            onTap: () async {
-              final result = await FilePicker.pickFiles(
-                type: FileType.any, // .purenote is not a standard type
-              );
-              if (result != null && result.files.single.path != null) {
-                if (!context.mounted) return;
-                try {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Restoring backup...')),
-                  );
-                  await ref.read(backupServiceProvider).restoreBackup(result.files.single.path!);
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Backup restored successfully!')),
-                    );
-                  }
-                } catch (e) {
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Restore failed: $e')),
-                    );
-                  }
-                }
-              }
-            },
+            leading: const Icon(Icons.storage_outlined),
+            title: const Text('Data & Storage'),
+            subtitle: const Text('Trash, export, and restore backups'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.go('/settings/data'),
+          ),
+          ListTile(
+            leading: const Icon(Icons.security_outlined),
+            title: const Text('Security'),
+            subtitle: const Text('App lock and note authentication'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.go('/settings/security'),
           ),
           const Divider(),
           const Padding(
@@ -196,7 +47,7 @@ class SettingsScreen extends ConsumerWidget {
             child: Text('About', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey)),
           ),
           ListTile(
-            leading: const Icon(Icons.info),
+            leading: const Icon(Icons.info_outline),
             title: const Text('About PureNote'),
             subtitle: const Text('Open-source info, Privacy Policy, and Licenses'),
             onTap: () {

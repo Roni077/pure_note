@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_quill/flutter_quill.dart';
+import 'package:flutter_quill_extensions/flutter_quill_extensions.dart';
 import 'package:go_router/go_router.dart';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
@@ -339,8 +340,11 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen> {
                     controller: _quillController,
                     focusNode: _editorFocusNode,
                     scrollController: _scrollController,
-                    config: const QuillEditorConfig(
+                    config: QuillEditorConfig(
                       expands: true,
+                      embedBuilders: [
+                        ...FlutterQuillEmbeds.editorBuilders(),
+                      ],
                     ),
                   ),
                 ),
@@ -354,6 +358,52 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen> {
                     itemCount: attachmentsAsync.value!.length,
                     itemBuilder: (context, index) {
                       final att = attachmentsAsync.value![index];
+                      final ext = att.filename.split('.').last.toLowerCase();
+                      final isImage = ['png', 'jpg', 'jpeg', 'gif', 'webp'].contains(ext);
+
+                      if (isImage) {
+                        return FutureBuilder<Directory>(
+                          future: getApplicationDocumentsDirectory(),
+                          builder: (context, snapshot) {
+                            if (!snapshot.hasData) return const SizedBox(width: 60, height: 60);
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 8.0),
+                              child: Stack(
+                                alignment: Alignment.topRight,
+                                children: [
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: Image.file(
+                                      File('${snapshot.data!.path}/${att.localPath}'),
+                                      height: 60,
+                                      width: 60,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                  Container(
+                                    margin: const EdgeInsets.all(2),
+                                    decoration: const BoxDecoration(
+                                      color: Colors.black54,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: InkWell(
+                                      onTap: () async {
+                                        ref.read(attachmentsRepositoryProvider).deleteAttachment(att.id);
+                                        final appDocsDir = await getApplicationDocumentsDirectory();
+                                        try {
+                                          await File('${appDocsDir.path}/${att.localPath}').delete();
+                                        } catch (_) {}
+                                      },
+                                      child: const Icon(Icons.close, color: Colors.white, size: 16),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        );
+                      }
+
                       return Padding(
                         padding: const EdgeInsets.only(right: 8.0),
                         child: Chip(
@@ -376,7 +426,9 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen> {
                 color: Theme.of(context).colorScheme.surface,
                 child: QuillSimpleToolbar(
                   controller: _quillController,
-                  config: const QuillSimpleToolbarConfig(),
+                  config: QuillSimpleToolbarConfig(
+                    embedButtons: FlutterQuillEmbeds.toolbarButtons(),
+                  ),
                 ),
               ),
             ],

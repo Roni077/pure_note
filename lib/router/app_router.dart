@@ -9,6 +9,10 @@ import '../ui/features/folders/views/folders_screen.dart';
 import '../ui/features/tags/views/tags_screen.dart';
 import '../ui/features/trash/views/trash_screen.dart';
 import '../ui/features/settings/views/settings_screen.dart';
+import '../ui/features/settings/views/appearance_settings_screen.dart';
+import '../ui/features/settings/views/notes_settings_screen.dart';
+import '../ui/features/settings/views/data_settings_screen.dart';
+import '../ui/features/settings/views/security_settings_screen.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -63,6 +67,24 @@ GoRouter buildAppRouter(bool showOnboarding) {
               GoRoute(
                 path: '/settings',
                 builder: (context, state) => const SettingsScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'appearance',
+                    builder: (context, state) => const AppearanceSettingsScreen(),
+                  ),
+                  GoRoute(
+                    path: 'notes',
+                    builder: (context, state) => const NotesSettingsScreen(),
+                  ),
+                  GoRoute(
+                    path: 'data',
+                    builder: (context, state) => const DataSettingsScreen(),
+                  ),
+                  GoRoute(
+                    path: 'security',
+                    builder: (context, state) => const SecuritySettingsScreen(),
+                  ),
+                ],
               ),
             ],
           ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'app_colors.dart';
 
 class AppTheme {
@@ -16,22 +17,19 @@ class AppTheme {
       outline: AppColors.borderLight,
     );
 
-    return ThemeData(
+    final baseTheme = ThemeData(
       useMaterial3: true,
       brightness: Brightness.light,
       colorScheme: scheme,
+    );
+
+    return baseTheme.copyWith(
       scaffoldBackgroundColor: scheme.surface,
       appBarTheme: AppBarTheme(
         backgroundColor: scheme.surface,
         elevation: 0,
         scrolledUnderElevation: 0,
         iconTheme: IconThemeData(color: scheme.onSurface),
-        titleTextStyle: TextStyle(
-          color: scheme.onSurface,
-          fontSize: 20,
-          fontWeight: FontWeight.w600,
-          letterSpacing: -0.5,
-        ),
       ),
       cardTheme: CardThemeData(
         color: scheme.surface,
@@ -41,14 +39,9 @@ class AppTheme {
           side: BorderSide(color: scheme.outline, width: 1),
         ),
       ),
-      textTheme: TextTheme(
-        displayLarge: TextStyle(color: scheme.onSurface, fontWeight: FontWeight.bold, letterSpacing: -1.0),
-        displayMedium: TextStyle(color: scheme.onSurface, fontWeight: FontWeight.bold, letterSpacing: -0.5),
-        displaySmall: TextStyle(color: scheme.onSurface, fontWeight: FontWeight.bold),
-        titleLarge: TextStyle(color: scheme.onSurface, fontWeight: FontWeight.w600),
-        bodyLarge: TextStyle(color: scheme.onSurface, height: 1.6),
-        bodyMedium: TextStyle(color: scheme.onSurface, height: 1.6),
-        bodySmall: TextStyle(color: scheme.onSurface.withOpacity(0.7), height: 1.4),
+      textTheme: GoogleFonts.interTextTheme(baseTheme.textTheme).apply(
+        bodyColor: scheme.onSurface,
+        displayColor: scheme.onSurface,
       ),
     );
   }
@@ -67,22 +60,19 @@ class AppTheme {
       outline: AppColors.borderDark,
     );
 
-    return ThemeData(
+    final baseTheme = ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
       colorScheme: scheme,
+    );
+
+    return baseTheme.copyWith(
       scaffoldBackgroundColor: scheme.surface,
       appBarTheme: AppBarTheme(
         backgroundColor: scheme.surface,
         elevation: 0,
         scrolledUnderElevation: 0,
         iconTheme: IconThemeData(color: scheme.onSurface),
-        titleTextStyle: TextStyle(
-          color: scheme.onSurface,
-          fontSize: 20,
-          fontWeight: FontWeight.w600,
-          letterSpacing: -0.5,
-        ),
       ),
       cardTheme: CardThemeData(
         color: scheme.surface,
@@ -92,14 +82,9 @@ class AppTheme {
           side: BorderSide(color: scheme.outline, width: 1),
         ),
       ),
-      textTheme: TextTheme(
-        displayLarge: TextStyle(color: scheme.onSurface, fontWeight: FontWeight.bold, letterSpacing: -1.0),
-        displayMedium: TextStyle(color: scheme.onSurface, fontWeight: FontWeight.bold, letterSpacing: -0.5),
-        displaySmall: TextStyle(color: scheme.onSurface, fontWeight: FontWeight.bold),
-        titleLarge: TextStyle(color: scheme.onSurface, fontWeight: FontWeight.w600),
-        bodyLarge: TextStyle(color: scheme.onSurface, height: 1.6),
-        bodyMedium: TextStyle(color: scheme.onSurface, height: 1.6),
-        bodySmall: TextStyle(color: scheme.onSurface.withOpacity(0.7), height: 1.4),
+      textTheme: GoogleFonts.interTextTheme(baseTheme.textTheme).apply(
+        bodyColor: scheme.onSurface,
+        displayColor: scheme.onSurface,
       ),
     );
   }
