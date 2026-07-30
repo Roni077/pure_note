@@ -51,7 +51,7 @@ class SettingsScreen extends ConsumerWidget {
             title: const Text('About PureNote'),
             subtitle: const Text('Open-source info, Privacy Policy, and Licenses'),
             onTap: () {
-              showLicensePage(
+              showAboutDialog(
                 context: context,
                 applicationName: 'PureNote',
                 applicationVersion: '1.0.0',

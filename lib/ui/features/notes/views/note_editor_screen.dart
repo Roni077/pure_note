@@ -39,9 +39,12 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen> {
   bool _isArchived = false;
   bool _isLocked = false;
 
+  String? _initialNoteId;
+
   @override
   void initState() {
     super.initState();
+    _initialNoteId = widget.noteId;
     _quillController = QuillController.basic();
   }
 
@@ -186,26 +189,13 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen> {
           Consumer(
             builder: (context, ref, child) {
               final foldersAsync = ref.watch(foldersListProvider);
-              return PopupMenuButton<String?>(
+              return IconButton(
                 icon: const Icon(Icons.folder_outlined),
                 tooltip: 'Assign Folder',
-                onSelected: (id) {
-                  setState(() => _selectedFolderId = id);
-                  _saveNote();
-                },
-                itemBuilder: (context) {
-                  final List<PopupMenuEntry<String?>> items = [
-                    const PopupMenuItem(value: null, child: Text('No Folder')),
-                  ];
+                onPressed: () {
                   if (foldersAsync.value != null) {
-                    for (final folder in foldersAsync.value!) {
-                      items.add(PopupMenuItem(
-                        value: folder.id,
-                        child: Text(folder.name),
-                      ));
-                    }
+                    _showFolderSelector(foldersAsync.value!);
                   }
-                  return items;
                 },
               );
             },
@@ -334,17 +324,25 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen> {
                 ),
               ),
               Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: QuillEditor.basic(
-                    controller: _quillController,
-                    focusNode: _editorFocusNode,
-                    scrollController: _scrollController,
-                    config: QuillEditorConfig(
-                      expands: true,
-                      embedBuilders: [
-                        ...FlutterQuillEmbeds.editorBuilders(),
-                      ],
+                child: GestureDetector(
+                  onTap: () {
+                    if (!_editorFocusNode.hasFocus) {
+                      _editorFocusNode.requestFocus();
+                    }
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: QuillEditor.basic(
+                      controller: _quillController,
+                      focusNode: _editorFocusNode,
+                      scrollController: _scrollController,
+                      config: QuillEditorConfig(
+                        padding: EdgeInsets.zero,
+                        expands: true,
+                        embedBuilders: [
+                          ...FlutterQuillEmbeds.editorBuilders(),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -427,6 +425,29 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen> {
                 child: QuillSimpleToolbar(
                   controller: _quillController,
                   config: QuillSimpleToolbarConfig(
+                    showUndo: true,
+                    showRedo: true,
+                    showBoldButton: true,
+                    showItalicButton: true,
+                    showUnderLineButton: true,
+                    showStrikeThrough: true,
+                    showListBullets: true,
+                    showListNumbers: true,
+                    showQuote: true,
+                    showFontFamily: false,
+                    showFontSize: false,
+                    showColorButton: false,
+                    showBackgroundColorButton: false,
+                    showClearFormat: false,
+                    showAlignmentButtons: false,
+                    showHeaderStyle: false,
+                    showSearchButton: false,
+                    showIndent: false,
+                    showLink: false,
+                    showInlineCode: false,
+                    showCodeBlock: false,
+                    showSubscript: false,
+                    showSuperscript: false,
                     embedButtons: FlutterQuillEmbeds.toolbarButtons(),
                   ),
                 ),
@@ -434,16 +455,15 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen> {
             ],
           );
 
-          if (noteId != null) {
-            return Hero(
-              tag: 'note-hero-$noteId',
-              child: Material(
-                color: Theme.of(context).scaffoldBackgroundColor,
-                child: bodyContent,
-              ),
-            );
-          }
-          return bodyContent;
+          final resolvedTag = _initialNoteId != null ? 'note-hero-$_initialNoteId' : 'note-hero-new';
+
+          return Hero(
+            tag: resolvedTag,
+            child: Material(
+              color: Theme.of(context).scaffoldBackgroundColor,
+              child: bodyContent,
+            ),
+          );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (err, stack) => Center(child: Text('Error: $err')),
@@ -483,6 +503,56 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen> {
                       },
                     );
                   },
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Done'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+  void _showFolderSelector(List<dynamic> allFolders) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: const Text('Assign Folder'),
+              content: SizedBox(
+                width: double.maxFinite,
+                child: ListView(
+                  shrinkWrap: true,
+                  children: [
+                    RadioListTile<String?>(
+                      title: const Text('No Folder'),
+                      value: null,
+                      groupValue: _selectedFolderId,
+                      onChanged: (val) {
+                        setDialogState(() => _selectedFolderId = val);
+                        setState(() {});
+                        _saveNote();
+                      },
+                    ),
+                    ...allFolders.map((folder) {
+                      return RadioListTile<String?>(
+                        title: Text(folder.name),
+                        value: folder.id,
+                        groupValue: _selectedFolderId,
+                        onChanged: (val) {
+                          setDialogState(() => _selectedFolderId = val);
+                          setState(() {});
+                          _saveNote();
+                        },
+                      );
+                    }),
+                  ],
                 ),
               ),
               actions: [
