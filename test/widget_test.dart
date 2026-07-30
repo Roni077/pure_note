@@ -11,15 +11,22 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pure_note/main.dart';
 import 'package:pure_note/router/app_router.dart';
 import 'package:pure_note/ui/features/settings/viewmodels/settings_viewmodel.dart';
+import 'package:drift/native.dart';
+import 'package:pure_note/data/database/app_database.dart';
+import 'package:pure_note/data/providers/repository_providers.dart';
 
 void main() {
   testWidgets('App launches successfully', (WidgetTester tester) async {
     // Initialize mock SharedPreferences
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
+    
+    final db = AppDatabase.forTesting(NativeDatabase.memory());
+    
     final container = ProviderContainer(
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
+        databaseProvider.overrideWithValue(db),
       ],
     );
 
@@ -36,5 +43,7 @@ void main() {
 
     // Verify that the Onboarding screen is shown initially.
     expect(find.text('PureNote'), findsWidgets);
+    
+    await db.close();
   });
 }
