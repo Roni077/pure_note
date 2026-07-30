@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../settings/viewmodels/settings_viewmodel.dart';
 
-class OnboardingScreen extends StatelessWidget {
+class OnboardingScreen extends ConsumerWidget {
   const OnboardingScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -35,8 +37,11 @@ class OnboardingScreen extends StatelessWidget {
               ),
               const Spacer(),
               ElevatedButton(
-                onPressed: () {
-                  context.go('/');
+                onPressed: () async {
+                  await ref.read(sharedPreferencesProvider).setBool('onboarding_completed', true);
+                  if (context.mounted) {
+                    context.go('/');
+                  }
                 },
                 child: const Text('Get Started'),
               ),

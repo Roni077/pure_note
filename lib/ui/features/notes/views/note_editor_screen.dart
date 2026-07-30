@@ -28,6 +28,7 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen> {
   late QuillController _quillController;
   final FocusNode _editorFocusNode = FocusNode();
   final FocusNode _titleFocusNode = FocusNode();
+  final ScrollController _scrollController = ScrollController();
   
   bool _isInitialized = false;
   String? _selectedFolderId;
@@ -49,6 +50,7 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen> {
     _quillController.dispose();
     _editorFocusNode.dispose();
     _titleFocusNode.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -335,6 +337,11 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: QuillEditor.basic(
                     controller: _quillController,
+                    focusNode: _editorFocusNode,
+                    scrollController: _scrollController,
+                    config: const QuillEditorConfig(
+                      expands: true,
+                    ),
                   ),
                 ),
               ),

@@ -5,6 +5,8 @@ import 'core/theme/app_theme.dart';
 import 'router/app_router.dart';
 import 'ui/features/settings/viewmodels/settings_viewmodel.dart';
 import 'data/providers/repository_providers.dart';
+import 'package:dynamic_color/dynamic_color.dart';
+import 'package:go_router/go_router.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,28 +24,37 @@ void main() async {
     container.read(notesRepositoryProvider).cleanUpTrash(settings.autoEmptyTrashDays);
   }
 
+  final bool showOnboarding = !(prefs.getBool('onboarding_completed') ?? false);
+  final router = buildAppRouter(showOnboarding);
+
   runApp(
     UncontrolledProviderScope(
       container: container,
-      child: const PureNoteApp(),
+      child: PureNoteApp(router: router),
     ),
   );
 }
 
 class PureNoteApp extends ConsumerWidget {
-  const PureNoteApp({super.key});
+  final GoRouter router;
+  
+  const PureNoteApp({super.key, required this.router});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(settingsProvider).themeMode;
     
-    return MaterialApp.router(
-      title: 'PureNote',
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: themeMode,
-      routerConfig: appRouter,
-      debugShowCheckedModeBanner: false,
+    return DynamicColorBuilder(
+      builder: (ColorScheme? lightDynamic, ColorScheme? darkDynamic) {
+        return MaterialApp.router(
+          title: 'PureNote',
+          theme: AppTheme.getLightTheme(lightDynamic),
+          darkTheme: AppTheme.getDarkTheme(darkDynamic),
+          themeMode: themeMode,
+          routerConfig: router,
+          debugShowCheckedModeBanner: false,
+        );
+      },
     );
   }
 }
