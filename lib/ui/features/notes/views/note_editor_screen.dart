@@ -324,25 +324,18 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen> {
                 ),
               ),
               Expanded(
-                child: GestureDetector(
-                  onTap: () {
-                    if (!_editorFocusNode.hasFocus) {
-                      _editorFocusNode.requestFocus();
-                    }
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: QuillEditor.basic(
-                      controller: _quillController,
-                      focusNode: _editorFocusNode,
-                      scrollController: _scrollController,
-                      config: QuillEditorConfig(
-                        padding: EdgeInsets.zero,
-                        expands: true,
-                        embedBuilders: [
-                          ...FlutterQuillEmbeds.editorBuilders(),
-                        ],
-                      ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: QuillEditor.basic(
+                    controller: _quillController,
+                    focusNode: _editorFocusNode,
+                    scrollController: _scrollController,
+                    config: QuillEditorConfig(
+                      padding: EdgeInsets.zero,
+                      expands: true,
+                      embedBuilders: [
+                        ...FlutterQuillEmbeds.editorBuilders(),
+                      ],
                     ),
                   ),
                 ),
